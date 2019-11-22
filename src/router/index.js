@@ -7,26 +7,20 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: '/',
+    name: 'home',
     component: Home,
-    children: [
-      {
-        path: '',
-        name: 'recipesList',
-        component: () => import('../views/RecipeList.vue')
-      },
-      {
-        path: '/recipes/:id',
-        name: 'recipeDetails',
-        component: () => import('../views/RecipeList.vue'),
-        meta: {
-          details: true,
-        }
-      }
-    ]
+  },
+  {
+    path: '/recipes/:id',
+    name: 'recipeDetails',
+    component: Home,
+    meta: {
+      details: true,
+    }
   },
   {
     path: '*',
-    redirect: { name: 'recipesList' },
+    redirect: { name: 'home' },
   },
 ]
 

@@ -1,7 +1,7 @@
 <template>
   <div class="navbar">
-    <router-link :to="{ name: 'recipesList' }">LIST</router-link>|
-    <router-link :to="{ name: 'recipeDetails', params: {id: 1} }">DETAILS</router-link>
+    <!-- <router-link :to="{ name: 'home' }">LIST</router-link>|
+    <router-link :to="{ name: 'recipeDetails', params: {id: 1} }">DETAILS</router-link> -->
   </div>
 </template>
 

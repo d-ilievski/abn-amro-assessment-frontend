@@ -12,10 +12,10 @@ export default {
     updateRecipe(model) {
         return Repository.post(`${resource}/UpdateRecipe`, model);
     },
-    deleteRecipe(id) {
-        return Repository.post(`${resource}/DeleteRecipe/${id}`, model);
+    deleteRecipe(model) {
+        return Repository.post(`${resource}/DeleteRecipe`, model);
     },
-    listRecipes() {
-        return Repository.get(`${resource}/ListRecipes`);
+    listRecipes(model) {
+        return Repository.post(`${resource}/ListRecipes`, model);
     },
 };
