@@ -1,17 +1,27 @@
 <template>
   <div class="recipeDetails">
     <div class="wrapper">
-      <div class="close-recipe">
-        <router-link :to="{name: 'home'}" class="close-recipe-link">
-          <i class="fas fa-times"></i>
-          Close
-        </router-link>
+      <div
+        class="actions d-none align-items-center justify-content-between d-lg-flex d-md-none"
+      >
+        <div class="d-flex">
+          <div class="delete" @click="remove">
+            <i class="fas fa-trash"></i>
+          </div>
+          <div class="edit" @click="edit">
+            <i class="fas fa-edit"></i>
+          </div>
+        </div>
+        <div class="close-recipe">
+          <router-link :to="{ name: 'home' }" class="close-recipe-link">
+            <i class="fas fa-chevron-left"></i>
+            Close
+          </router-link>
+        </div>
       </div>
       <div class="image">
         <img
-          :src="
-            `https://via.placeholder.com/600x300?text=${recipe.name}+Photo`
-          "
+          :src="`https://via.placeholder.com/600x300?text=${recipe.name}+Photo`"
         />
       </div>
       <div class="name">
@@ -30,32 +40,50 @@
           {{ recipe.servings === 1 ? "serving" : "servings" }}
         </div>
       </div>
+      <div class="date text-right" v-if="recipe.createdOn">
+        Created on
+        {{ recipe.createdOn | moment("DD-MM-YYYY HH:mm") }}
+      </div>
+      <div class="ingredients text-left">
+        <h5 class="title">Ingredients:</h5>
+        <ul>
+          <li
+            v-for="(ingredient, index) in recipe.ingredients"
+            :key="`ingr_${index}`"
+          >
+            {{ ingredient }}
+          </li>
+        </ul>
+      </div>
+      <hr />
       <div class="instructions">
         <h5 class="title">Instructions:</h5>
         <div v-html="recipe.instructions"></div>
-        
-      </div>
-      <div class="delete">
-        <i class="fas fa-trash"></i>
-        Delete Recipe
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { RecipeActions } from "@/utils/constants"
+
 export default {
   name: "RecipeDetails",
   props: {
     recipe: Object
+  },
+  methods: {
+    edit() {
+      this.$eventBus.$emit(RecipeActions.EditRecipe, this.$props.recipe);
+    },
+    remove() {
+      this.$eventBus.$emit(RecipeActions.DeleteRecipe, this.$props.recipe);
+    }
   }
 };
 </script>
 
 <style scoped>
-
-
-
 .recipeDetails {
   position: fixed;
   top: 0;
@@ -76,9 +104,30 @@ export default {
   overflow-y: auto;
 }
 
+.actions {
+  margin-bottom: 10px;
+}
+
+.delete {
+  color: rgb(172, 172, 172);
+}
+.delete:hover {
+  color: rgb(145, 0, 0);
+  cursor: pointer;
+}
+
+.edit {
+  color: rgb(172, 172, 172);
+  margin-left: 20px;
+}
+.edit:hover {
+  color: rgb(17, 145, 0);
+  cursor: pointer;
+}
+
 .image {
-  min-width: 560px;
-  max-height: 300px;
+  width: 100%;
+  max-height: 250px;
   overflow: hidden;
 
   display: flex;
@@ -86,7 +135,7 @@ export default {
   justify-content: center;
 }
 .image img {
-  width: 100%;
+  min-width: 100%;
   height: auto;
 }
 
@@ -105,18 +154,23 @@ export default {
   color: rgb(17, 145, 0);
 }
 
+.date {
+  font-size: 0.85em;
+  margin: 10px 0;
+  color: rgb(172, 172, 172);
+}
+
 .instructions {
-  min-width: 543px;
+  min-width: 100%;
 }
 
 .instructions .title {
   text-align: left;
-  margin: 20px 0;
+  margin: 10px 0;
 }
 
 .close-recipe {
   text-align: right;
-  margin: 0 0 10px 0;
 }
 .close-recipe-link {
   font-size: 1em;
@@ -126,5 +180,16 @@ export default {
   cursor: pointer;
   color: rgb(17, 145, 0);
   text-decoration: none;
+}
+
+/* Media Queries */
+@media screen and (max-width: 991px) {
+  .recipeDetails {
+    width: 100%;
+  }
+
+  .image {
+    min-width: 100%;
+  }
 }
 </style>
