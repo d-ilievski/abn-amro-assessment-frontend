@@ -3,19 +3,19 @@ import Repository from './Repository';
 const resource = '/recipes';
 
 export default {
-    createRecipe(model) {
-        return Repository.post(`${resource}/CreateRecipe`, model);
+    create(model) {
+        return Repository.post(`${resource}`, model);
     },
-    getRecipe(id) {
-        return Repository.get(`${resource}/GetRecipe/${id}`);
+    get(id) {
+        return Repository.get(`${resource}/${id}`);
     },
-    updateRecipe(model) {
-        return Repository.post(`${resource}/UpdateRecipe`, model);
+    update(model) {
+        return Repository.put(`${resource}`, model);
     },
-    deleteRecipe(model) {
-        return Repository.post(`${resource}/DeleteRecipe`, model);
+    delete(model) {
+        return Repository.delete(`${resource}`, model);
     },
-    listRecipes(model) {
+    list(model) {
         return Repository.post(`${resource}/ListRecipes`, model);
     },
 };

@@ -5,7 +5,7 @@
         {{ recipe.name }}
       </div>
       <div class="vegetarian">
-        <i class="fas fa-seedling" v-if="recipe.isVegetarian"></i>
+        <i class="fas fa-seedling" v-if="recipe.vegetarian"></i>
       </div>
       <div class="servings">
         {{ recipe.servings }}
@@ -35,7 +35,7 @@ export default {
       // prevent route duplication
       if (this.$route.params.id !== this.$props.recipe.id) {
         // publish event
-        this.$eventBus.$emit(RecipeActions.FetchRecipe, this.$props.recipe);
+        this.$eventBus.$emit(RecipeActions.ViewRecipe, this.$props.recipe);
 
         // redirect
         this.$router.push({

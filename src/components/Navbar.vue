@@ -51,7 +51,8 @@ export default {
     };
   },
   props: {
-    loading: Boolean
+    loading: Boolean,
+    recipe: Object
   },
   methods: {
     search() {
@@ -61,7 +62,7 @@ export default {
       );
     },
     edit() {
-      this.$eventBus.$emit(RecipeActions.EditRecipe)
+      this.$eventBus.$emit(RecipeActions.EditRecipe, this.$props.recipe)
     },
     remove() {
       this.$eventBus.$emit(RecipeActions.DeleteRecipe)

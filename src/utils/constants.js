@@ -1,5 +1,5 @@
 export const RecipeActions = {
-  FetchRecipe: "fetchRecipe",
+  ViewRecipe: "viewRecipe",
   SearchRecipes: "searchRecipes",
   AddRecipe: "addRecipe",
   EditRecipe: "editRecipe",

@@ -1,14 +1,20 @@
 <template>
   <div class="home">
     <transition name="open">
-      <RecipeDetails v-if="this.$route.meta.details" :recipe="currentRecipe" />
+      <RecipeDetails v-if="this.$route.meta.details" :recipe="viewRecipe" />
     </transition>
-    <Navbar :loading="recipesLoading" />
+    <Navbar :loading="recipesLoading" :recipe="viewRecipe" />
     <div class="content" :class="{ open: this.$route.meta.details }">
       <RecipesList :recipes="recipes" :loading="recipesLoading" />
     </div>
     <!-- Modals & Dialogs -->
-    <vModal :show="showAddEditRecipeDialog" @close="closeAddEditRecipeDialog" />
+    <AddEditRecipeModal
+      :recipe="workRecipe"
+      :show="showAddEditRecipeModal"
+      :editing="editingRecipe"
+      @close="closeAddEditRecipeModal"
+      @submit="submitRecipe"
+    />
 
     <vConfirmDialog
       :show="deletingRecipe"
@@ -21,7 +27,9 @@
       <div>
         Do you really want to delete the recipe?
         <div>-</div>
-        <span class="text-danger"><strong>This action is irreversible.</strong></span>
+        <span class="text-danger"
+          ><strong>This action is irreversible.</strong></span
+        >
       </div>
     </vConfirmDialog>
   </div>
@@ -31,9 +39,10 @@
 import RecipesList from "@/components/RecipeList/RecipesList.vue";
 import RecipeDetails from "@/components/RecipeDetails.vue";
 import Navbar from "@/components/Navbar.vue";
-import vModal from "@/components/vModal.vue";
+import AddEditRecipeModal from "@/components/AddEditRecipeModal.vue";
 import vConfirmDialog from "@/components/vConfirmDialog.vue";
 import { RecipeActions } from "@/utils/constants";
+import RecipesRepository from "@/api/RecipesRepository";
 
 export default {
   name: "Home",
@@ -41,93 +50,100 @@ export default {
     RecipesList,
     RecipeDetails,
     Navbar,
-    vModal,
+    AddEditRecipeModal,
     vConfirmDialog
   },
   data: () => {
     return {
-      currentRecipe: {
-        id: 1,
-        name: "Alfredo Sauce",
-        isVegetarian: true,
-        servings: 1,
-        createdOn: Date.now(),
-        ingredients: ["100g Oriz", "5g Brashno", "1kg Pileshko Meso"],
-        instructions:
-          '<!-- #######  YAY, I AM THE SOURCE EDITOR! #########--><h1 style="color: #5e9ca0;">You can edit <span style="color: #2b2301;">this demo</span> text!</h1><h2 style="color: #2e6c80;">How to use the editor:</h2>'
+      workRecipe: {
+        id: 0,
+        vegetarian: false,
+        ingredients: [],
+        name: "",
+        instructions: "",
+        servings: 0
       },
+      viewRecipe: {},
       recipes: [
         {
           id: 1,
           name: "Pancakes",
-          isVegetarian: true,
+          vegetarian: true,
           servings: 1
         },
         {
           id: 2,
           name: "Pizza",
-          isVegetarian: false,
+          vegetarian: false,
           servings: 2
         },
         {
           id: 3,
           name: "Coke",
-          isVegetarian: true,
+          vegetarian: true,
           servings: 3
         },
         {
           id: 4,
           name: "Pasta Carbonara",
-          isVegetarian: false,
+          vegetarian: false,
           servings: 4
         },
         {
           id: 5,
           name: "Tavche Gravche",
-          isVegetarian: true,
+          vegetarian: true,
           servings: 2
         },
         {
           id: 6,
           name: "Pancakes",
-          isVegetarian: true,
+          vegetarian: true,
           servings: 1
         },
         {
           id: 7,
           name: "Pizza",
-          isVegetarian: false,
+          vegetarian: false,
           servings: 2
         },
         {
           id: 8,
           name: "Coke",
-          isVegetarian: true,
+          vegetarian: true,
           servings: 3
         },
         {
           id: 9,
           name: "Pasta Carbonara",
-          isVegetarian: false,
+          vegetarian: false,
           servings: 4
         },
         {
           id: 10,
           name: "Tavche Gravche",
-          isVegetarian: true,
+          vegetarian: true,
           servings: 2
         }
       ],
       recipesLoading: false,
-      showAddEditRecipeDialog: false,
-      deletingRecipe: false
+      showAddEditRecipeModal: false,
+      deletingRecipe: false,
+      editingRecipe: false
     };
   },
   methods: {
-    setCurrentRecipe(recipe) {
-      this.currentRecipe = recipe;
+    resetWorkRecipe() {
+      this.workRecipe = {
+        id: 0,
+        vegetarian: false,
+        ingredients: [],
+        name: "",
+        instructions: "",
+        servings: 0
+      };
+      this.editingRecipe = false;
     },
-
     searchRecipes(searchTerm) {
       this.$data.recipesLoading = true;
       setTimeout(() => {
@@ -135,16 +151,57 @@ export default {
         this.$emit(searchTerm);
       }, 3000);
     },
-    closeAddEditRecipeDialog() {
-      this.$data.showAddEditRecipeDialog = false;
-      // reset
+    closeAddEditRecipeModal() {
+      this.$data.showAddEditRecipeModal = false;
+      this.resetWorkRecipe();
+    },
+    submitRecipe() {
+      if (this.editingRecipe) {
+        this.workRecipe.updatedOn = Date.now();
+        this.workRecipe.ingredients = JSON.stringify(
+          this.workRecipe.ingredients
+        );
+        RecipesRepository.update(this.workRecipe).then(result => {
+          // update display on frontend if editing the same recipe
+          if (result.data.id === this.viewRecipe.id) {
+            this.viewRecipe = result.data;
+          }
+          this.closeAddEditRecipeModal();
+        });
+      } else {
+        this.workRecipe.createdOn = Date.now();
+        RecipesRepository.create(this.workRecipe).then(() => {
+          this.closeAddEditRecipeModal();
+        });
+      }
+    },
+    getRecipeById(id) {
+      return RecipesRepository.get(id).then(result => {
+        // parse ingredients
+        let data = {...result.data};
+        if (data.ingredients)
+          data.ingredients = JSON.parse(result.data.ingredients);
+        else data.ingredients = [];
+
+        return data;
+      });
     }
   },
   created() {
+    // if direct access from /recipes/:id
+    if (this.$route.params.id && !this.viewRecipe.id) {
+      this.getRecipeById(this.$route.params.id).then(recipe => {
+        this.viewRecipe = recipe;
+      });
+    }
+
     // Pub Sub
 
-    this.$eventBus.$on(RecipeActions.FetchRecipe, recipe => {
-      this.setCurrentRecipe(recipe);
+    this.$eventBus.$on(RecipeActions.ViewRecipe, recipe => {
+      this.getRecipeById(recipe.id).then(recipe => {
+        
+        this.viewRecipe = recipe;
+      });
     });
 
     this.$eventBus.$on(RecipeActions.SearchRecipes, searchTerm => {
@@ -152,12 +209,25 @@ export default {
     });
 
     this.$eventBus.$on(RecipeActions.AddRecipe, () => {
-      this.$data.showAddEditRecipeDialog = true;
+      this.resetWorkRecipe();
+      this.$data.showAddEditRecipeModal = true;
     });
 
-    this.$eventBus.$on(RecipeActions.EditRecipe, () => {
-      // this.$emit(recipe)
-      this.$data.showAddEditRecipeDialog = true;
+    this.$eventBus.$on(RecipeActions.EditRecipe, recipe => {
+      this.editingRecipe = true;
+
+      // already fetched
+      if (recipe.id === this.viewRecipe.id) {
+        this.$data.workRecipe = { ...this.viewRecipe };
+        this.$data.showAddEditRecipeModal = true;
+      }
+      // fetch then set
+      else {
+        this.getRecipeById(recipe.id).then(result => {
+          this.$data.workRecipe = result.data;
+          this.$data.showAddEditRecipeModal = true;
+        });
+      }
     });
 
     this.$eventBus.$on(RecipeActions.DeleteRecipe, () => {
@@ -166,7 +236,7 @@ export default {
     });
   },
   destroyed() {
-    this.$eventBus.$off(RecipeActions.FetchRecipe);
+    this.$eventBus.$off(RecipeActions.ViewRecipe);
     this.$eventBus.$off(RecipeActions.SearchRecipes);
     this.$eventBus.$off(RecipeActions.EditRecipe);
     this.$eventBus.$off(RecipeActions.AddRecipe);

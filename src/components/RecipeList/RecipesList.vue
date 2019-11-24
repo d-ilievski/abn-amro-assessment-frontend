@@ -2,7 +2,7 @@
   <div class="RecipesList">
     <div class="container top-controls">
       <div class="actions d-flex align-items-center justify-content-between">
-        <div class="add">
+        <div class="add" @click="add">
           <i class="fas fa-plus"></i>
           Add New Recipe
         </div>
@@ -23,11 +23,19 @@
       results
     </div>
     <div class="container paging d-flex align-items-center">
-      <span class="prev" :class="{'disabled':this.page === 1}" @click.prevent="prevPage">
+      <span
+        class="prev"
+        :class="{ disabled: this.page === 1 }"
+        @click.prevent="prevPage"
+      >
         <i class="fas fa-chevron-left"></i>
         Prev
       </span>
-      <span class="next" :class="{'disabled':isLastPage}" @click.prevent="nextPage">
+      <span
+        class="next"
+        :class="{ disabled: isLastPage }"
+        @click.prevent="nextPage"
+      >
         Next
         <i class="fas fa-chevron-right"></i>
       </span>
@@ -38,6 +46,7 @@
 <script>
 import RecipeListItem from "./RecipeListItem.vue";
 import vSearch from "@/components/vSearch.vue";
+import { RecipeActions } from "@/utils/constants";
 
 export default {
   name: "RecipesList",
@@ -48,7 +57,7 @@ export default {
   data: () => {
     return {
       page: 1
-    }
+    };
   },
   props: {
     recipes: Array,
@@ -56,12 +65,13 @@ export default {
   },
   methods: {
     prevPage() {
-      if(this.$data.page > 1)
-        this.$data.page -= 1;
+      if (this.$data.page > 1) this.$data.page -= 1;
     },
     nextPage() {
-      if(!this.isLastPage)
-        this.$data.page += 1;
+      if (!this.isLastPage) this.$data.page += 1;
+    },
+    add() {
+      this.$eventBus.$emit(RecipeActions.AddRecipe);
     }
   },
   computed: {
@@ -117,7 +127,7 @@ export default {
 
 .paging .prev.disabled,
 .paging .next.disabled {
-  color:rgb(139, 139, 139);
+  color: rgb(139, 139, 139);
 }
 
 .paging .prev.disabled:hover,

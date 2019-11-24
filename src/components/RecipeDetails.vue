@@ -30,7 +30,7 @@
       <hr />
       <div class="labels">
         <div class="vegetarian">
-          <span v-if="recipe.isVegetarian">
+          <span v-if="recipe.vegetarian">
             <i class="fas fa-seedling icon"></i>
             Vegetarian
           </span>
@@ -51,12 +51,12 @@
             v-for="(ingredient, index) in recipe.ingredients"
             :key="`ingr_${index}`"
           >
-            {{ ingredient }}
+            {{ ingredient.name }}
           </li>
         </ul>
       </div>
       <hr />
-      <div class="instructions">
+      <div class="instructions text-left">
         <h5 class="title">Instructions:</h5>
         <div v-html="recipe.instructions"></div>
       </div>

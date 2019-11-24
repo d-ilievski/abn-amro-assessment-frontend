@@ -1,7 +1,7 @@
 <template>
   <transition name="show">
     <div class="modal d-block" tabindex="-1" role="dialog" v-if="show">
-      <div class="modal-dialog" role="document">
+      <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">{{ title }}</h5>
@@ -51,6 +51,7 @@ export default {
 <style scoped>
 .modal {
   background: rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
 }
 
 .show-enter-active,

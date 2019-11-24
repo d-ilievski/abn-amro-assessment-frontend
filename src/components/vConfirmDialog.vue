@@ -45,11 +45,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-.btn-confirm {
-  background: rgb(17, 145, 0);
-  border: 1px solid rgb(17, 145, 0);
-  color: white;
-}
-</style>
