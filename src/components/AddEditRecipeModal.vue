@@ -3,23 +3,23 @@
     <template v-slot:body>
       <form class="text-left">
         <div class="form-group">
-          <label for="recipeName">Recipe Name</label>
-
-          <input
-            type="text"
-            class="form-control"
-            id="recipeName"
-            placeholder="Enter Recipe Name"
-            v-model="recipe.name"
-          />
+          <label for="recipeName" class="required">Recipe Name</label>
+          <ValidationProvider v-slot="{ errors }" rules="required">
+            <input
+              type="text"
+              class="form-control"
+              id="recipeName"
+              placeholder="Enter Recipe Name"
+              v-model="recipe.name"
+              :class="{'error':errors[0]}"
+            />
+            <span class="validation-message">{{errors[0]}}</span>
+          </ValidationProvider>
         </div>
         <div class="form-group">
           <div>
             <label>Ingredients</label>
-            <button
-              class="btn btn-confirm btn-sm ingredient-btn"
-              @click.prevent="addIngredient"
-            >
+            <button class="btn btn-confirm btn-sm ingredient-btn" @click.prevent="addIngredient">
               <i class="fas fa-plus"></i>
               Add
             </button>
@@ -36,10 +36,7 @@
                 placeholder="Ingredient Name"
                 v-model="ingredient.name"
               />
-              <span
-                class="ingredient-delete"
-                @click="removeIngredient(ingredient)"
-              >
+              <span class="ingredient-delete" @click="removeIngredient(ingredient)">
                 <i class="fas fa-trash"></i>
               </span>
             </div>
@@ -48,14 +45,18 @@
         <div class="form-row align-items-center">
           <div class="col-6">
             <div class="form-group">
-              <label for="servings">Servings</label>
-              <input
-                type="text"
-                class="form-control"
-                id="servings"
-                placeholder="No. Servings"
-                v-model="recipe.servings"
-              />
+              <ValidationProvider v-slot="{ errors }" rules="required|min_value:0">
+                <label for="servings" class="required">Servings</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="servings"
+                  placeholder="No. Servings"
+                  v-model="recipe.servings"
+                  :class="{'error':errors[0]}"
+                />
+                <span class="validation-message">{{errors[0]}}</span>
+              </ValidationProvider>
             </div>
           </div>
           <div class="col-6">
@@ -66,9 +67,7 @@
                 id="vegetarainCbx"
                 v-model="recipe.vegetarian"
               />
-              <label class="form-check-label" for="vegetarianCbx"
-                >Vegetarian</label
-              >
+              <label class="form-check-label" for="vegetarianCbx">Vegetarian</label>
             </div>
           </div>
         </div>
@@ -85,35 +84,33 @@
               @change="choosePhoto"
             />
           </div>
-          <small class="text-muted" v-if="editing"
-            >Note: Photo will be overriden!</small
-          >
+          <small class="text-muted" v-if="editing">Note: Photo will be overriden!</small>
         </div>
         <div class="form-group">
           <label for="recipeInstructions">Recipe Instructions</label>
-          <small class="text-muted d-block d-md-none"
-            >Please turn your device sideways for better experience.</small
-          >
+          <small
+            class="text-muted d-block d-md-none"
+          >Please turn your device sideways for better experience.</small>
           <wysiwyg v-model="recipe.instructions" />
         </div>
       </form>
     </template>
     <template v-slot:buttons>
-      <button type="submit" class="btn btn-confirm" @click.prevent="submit" >Save</button>
-      <button type="submit" class="btn btn-secondary" @click.prevent="close">
-        Cancel
-      </button>
+      <button type="submit" class="btn btn-confirm" @click.prevent="submit">Save</button>
+      <button type="submit" class="btn btn-secondary" @click.prevent="close">Cancel</button>
     </template>
   </vModal>
 </template>
 
 <script>
 import vModal from "@/components/vModal.vue";
+import { ValidationProvider } from "vee-validate";
 
 export default {
   name: "AddEditRecipeModal",
   components: {
-    vModal
+    vModal,
+    ValidationProvider
   },
   data: () => {
     return {
@@ -140,7 +137,7 @@ export default {
       this.$props.recipe.ingredients.push({ name: "" });
     },
     choosePhoto() {
-      this.$emit('choosePhoto', this.$refs.recipePhotoUpload.files[0]);
+      this.$emit("choosePhoto", this.$refs.recipePhotoUpload.files[0]);
     }
   },
   computed: {
@@ -153,9 +150,8 @@ export default {
 </script>
 
 <style scoped>
-
 .ingredient {
-    padding: 10px;
+  padding: 10px;
 }
 
 .ingredient-btn {
@@ -167,7 +163,6 @@ export default {
   overflow-y: auto;
   background: rgb(224, 224, 224);
 }
-
 
 .ingredient-delete {
   margin-left: 10px;

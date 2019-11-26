@@ -1,13 +1,12 @@
 <template>
   <div id="app">
-    <router-view/>
+    <router-view />
   </div>
 </template>
 
 <style>
-
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
@@ -32,5 +31,20 @@ body {
 
 .btn {
   border-radius: 0 !important;
+}
+
+input.error,
+input.error:focus {
+  border-color: rgb(220, 53, 69);
+  background-color: rgba(220, 53, 69, .09);
+}
+.validation-message {
+  margin-top: 0.25rem;
+  font-size: 80%;
+  color: #dc3545;
+}
+label.required::after {
+  color: #dc3545;
+  content: ' *';
 }
 </style>
