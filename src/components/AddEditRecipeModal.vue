@@ -81,6 +81,8 @@
               id="recipePhoto"
               placeholder="Enter Recipe Name"
               class="upload"
+              :ref="'recipePhotoUpload'"
+              @change="choosePhoto"
             />
           </div>
           <small class="text-muted" v-if="editing"
@@ -136,6 +138,9 @@ export default {
     },
     addIngredient() {
       this.$props.recipe.ingredients.push({ name: "" });
+    },
+    choosePhoto() {
+      this.$emit('choosePhoto', this.$refs.recipePhotoUpload.files[0]);
     }
   },
   computed: {

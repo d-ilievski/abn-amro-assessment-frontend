@@ -5,7 +5,11 @@
     </transition>
     <Navbar :loading="recipesLoading" :recipe="viewRecipe" />
     <div class="content" :class="{ open: this.$route.meta.details }">
-      <RecipesList :recipes="recipes" :loading="recipesLoading" />
+      <RecipesList
+        :recipes="recipes"
+        :loading="recipesLoading"
+        :queryOptions="this.queryOptions"
+      />
     </div>
     <!-- Modals & Dialogs -->
     <AddEditRecipeModal
@@ -14,6 +18,7 @@
       :editing="editingRecipe"
       @close="closeAddEditRecipeModal"
       @submit="submitRecipe"
+      @choosePhoto="photo => (this.photoFile = photo)"
     />
 
     <vConfirmDialog
@@ -22,7 +27,8 @@
       :confirmButton="'Yes, delete!'"
       :declineButton="'Cancel'"
       :danger="true"
-      @close="deletingRecipe = false"
+      @cancel="deletingRecipe = false"
+      @confirm="deleteRecipe"
     >
       <div>
         Do you really want to delete the recipe?
@@ -43,9 +49,12 @@ import AddEditRecipeModal from "@/components/AddEditRecipeModal.vue";
 import vConfirmDialog from "@/components/vConfirmDialog.vue";
 import { RecipeActions } from "@/utils/constants";
 import RecipesRepository from "@/api/RecipesRepository";
+import FilesRepository from "@/api/FilesRepository";
+import router from "@/router/index";
 
 export default {
   name: "Home",
+  router,
   components: {
     RecipesList,
     RecipeDetails,
@@ -55,77 +64,16 @@ export default {
   },
   data: () => {
     return {
-      workRecipe: {
-        id: 0,
-        vegetarian: false,
-        ingredients: [],
-        name: "",
-        instructions: "",
-        servings: 0
-      },
+      workRecipe: {},
       viewRecipe: {},
-      recipes: [
-        {
-          id: 1,
-          name: "Pancakes",
-          vegetarian: true,
-          servings: 1
-        },
-        {
-          id: 2,
-          name: "Pizza",
-          vegetarian: false,
-          servings: 2
-        },
-        {
-          id: 3,
-          name: "Coke",
-          vegetarian: true,
-          servings: 3
-        },
-        {
-          id: 4,
-          name: "Pasta Carbonara",
-          vegetarian: false,
-          servings: 4
-        },
-        {
-          id: 5,
-          name: "Tavche Gravche",
-          vegetarian: true,
-          servings: 2
-        },
-        {
-          id: 6,
-          name: "Pancakes",
-          vegetarian: true,
-          servings: 1
-        },
-        {
-          id: 7,
-          name: "Pizza",
-          vegetarian: false,
-          servings: 2
-        },
-        {
-          id: 8,
-          name: "Coke",
-          vegetarian: true,
-          servings: 3
-        },
-        {
-          id: 9,
-          name: "Pasta Carbonara",
-          vegetarian: false,
-          servings: 4
-        },
-        {
-          id: 10,
-          name: "Tavche Gravche",
-          vegetarian: true,
-          servings: 2
-        }
-      ],
+      photoFile: null,
+      recipes: [],
+      queryOptions: {
+        page: 0,
+        searchTerm: "",
+        totalElements: 0,
+        totalPages: 0
+      },
       recipesLoading: false,
       showAddEditRecipeModal: false,
       deletingRecipe: false,
@@ -143,51 +91,114 @@ export default {
         servings: 0
       };
       this.editingRecipe = false;
+      this.photoFile = null;
     },
     searchRecipes(searchTerm) {
       this.$data.recipesLoading = true;
-      setTimeout(() => {
-        this.$data.recipesLoading = false;
-        this.$emit(searchTerm);
-      }, 3000);
+      RecipesRepository.list(searchTerm, this.queryOptions.page).then(
+        result => {
+          this.recipes = result.data.content;
+          this.queryOptions.totalElements = result.data.totalElements;
+          this.queryOptions.totalPages = result.data.totalPages;
+          this.$data.recipesLoading = false;
+        }
+      );
     },
     closeAddEditRecipeModal() {
       this.$data.showAddEditRecipeModal = false;
       this.resetWorkRecipe();
     },
     submitRecipe() {
+      let recipe = JSON.parse(JSON.stringify(this.workRecipe));
+
+      recipe.ingredients = JSON.stringify(this.workRecipe.ingredients);
+
+      this.$data.showAddEditRecipeModal = false;
+
       if (this.editingRecipe) {
-        this.workRecipe.updatedOn = Date.now();
-        this.workRecipe.ingredients = JSON.stringify(
-          this.workRecipe.ingredients
-        );
-        RecipesRepository.update(this.workRecipe).then(result => {
+        recipe.updatedOn = Date.now();
+        RecipesRepository.update(recipe).then(result => {
           // update display on frontend if editing the same recipe
-          if (result.data.id === this.viewRecipe.id) {
-            this.viewRecipe = result.data;
+
+          if (this.photoFile) {
+            FilesRepository.uploadRecipePhoto(this.photoFile, recipe.id).then(() => {
+              if (result.data.id === this.viewRecipe.id) {
+                this.viewRecipe = result.data;
+                this.viewRecipe.ingredients = JSON.parse(
+                  result.data.ingredients
+                );
+              }
+            });
           }
+
+          // update list locally
+          let index = this.recipes.findIndex(
+            recipe => recipe.id === result.data.id
+          );
+          this.recipes[index].name = result.data.name;
+          this.recipes[index].vegetarian = result.data.vegetarian;
+          this.recipes[index].servings = result.data.servings;
+
           this.closeAddEditRecipeModal();
         });
       } else {
         this.workRecipe.createdOn = Date.now();
-        RecipesRepository.create(this.workRecipe).then(() => {
+        RecipesRepository.create(recipe).then(result => {
+          let reducedRecipe = {
+            id: result.data.id,
+            name: result.data.name,
+            servings: result.data.servings,
+            vegetarian: result.data.vegetarian
+          };
+          this.recipes.push(reducedRecipe);
+          
+          if (this.photoFile) {
+            FilesRepository.uploadRecipePhoto(this.photoFile);
+          }
+
           this.closeAddEditRecipeModal();
         });
       }
     },
     getRecipeById(id) {
-      return RecipesRepository.get(id).then(result => {
-        // parse ingredients
-        let data = {...result.data};
-        if (data.ingredients)
-          data.ingredients = JSON.parse(result.data.ingredients);
-        else data.ingredients = [];
+      return RecipesRepository.get(id)
+        .then(result => {
+          if (result.data == "")
+            this.$router.push({
+              name: "home"
+            });
 
-        return data;
+          // parse ingredients
+          let data = { ...result.data };
+          if (data.ingredients)
+            data.ingredients = JSON.parse(result.data.ingredients);
+          else data.ingredients = [];
+
+          return data;
+        })
+        .catch(() => {
+          this.$router.push({
+            name: "home"
+          });
+        });
+    },
+    deleteRecipe() {
+      RecipesRepository.delete(this.viewRecipe.id).then(() => {
+        let index = this.recipes.findIndex(
+          recipe => recipe.id === this.viewRecipe.id
+        );
+        this.recipes.splice(index, 1);
+        this.deletingRecipe = false;
+        this.$router.push({
+          name: "home"
+        });
       });
     }
   },
   created() {
+    // initial fetch of recipes
+    this.searchRecipes();
+
     // if direct access from /recipes/:id
     if (this.$route.params.id && !this.viewRecipe.id) {
       this.getRecipeById(this.$route.params.id).then(recipe => {
@@ -196,15 +207,14 @@ export default {
     }
 
     // Pub Sub
-
     this.$eventBus.$on(RecipeActions.ViewRecipe, recipe => {
       this.getRecipeById(recipe.id).then(recipe => {
-        
         this.viewRecipe = recipe;
       });
     });
 
     this.$eventBus.$on(RecipeActions.SearchRecipes, searchTerm => {
+      this.queryOptions.page = 0;
       this.searchRecipes(searchTerm);
     });
 
@@ -218,13 +228,13 @@ export default {
 
       // already fetched
       if (recipe.id === this.viewRecipe.id) {
-        this.$data.workRecipe = { ...this.viewRecipe };
+        this.$data.workRecipe = JSON.parse(JSON.stringify(this.viewRecipe));
         this.$data.showAddEditRecipeModal = true;
       }
       // fetch then set
       else {
         this.getRecipeById(recipe.id).then(result => {
-          this.$data.workRecipe = result.data;
+          this.workRecipe = result;
           this.$data.showAddEditRecipeModal = true;
         });
       }

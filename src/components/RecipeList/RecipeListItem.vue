@@ -21,19 +21,17 @@
 </template>
 
 <script>
-import router from "@/router/index";
 import { RecipeActions } from "@/utils/constants";
 
 export default {
   name: "RecipeListItem",
-  router,
   props: {
     recipe: Object
   },
   methods: {
     openRecipeDetails() {
       // prevent route duplication
-      if (this.$route.params.id !== this.$props.recipe.id) {
+      if (this.$route.params.id != this.$props.recipe.id) {
         // publish event
         this.$eventBus.$emit(RecipeActions.ViewRecipe, this.$props.recipe);
 

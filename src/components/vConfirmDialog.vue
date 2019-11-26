@@ -1,5 +1,5 @@
 <template>
-  <vModal :show="show" :title="title" @close="close">
+  <vModal :show="show" :title="title" @cancel="cancel">
     <template v-slot:body>
       <slot></slot>
     </template>
@@ -8,6 +8,7 @@
         type="button"
         class="btn"
         :class="danger ? 'btn-danger' : 'btn-confirm'"
+        @click.prevent="confirm"
       >
         {{ confirmButton }}
       </button>
@@ -15,7 +16,7 @@
         type="button"
         class="btn btn-secondary"
         data-dismiss="modal"
-        @click.prevent="close"
+        @click.prevent="cancel"
       >
         {{ declineButton }}
       </button>
@@ -32,8 +33,11 @@ export default {
     vModal
   },
   methods: {
-    close() {
-      this.$emit("close");
+    cancel() {
+      this.$emit("cancel");
+    },
+    confirm() {
+      this.$emit("confirm");
     }
   },
   props: {

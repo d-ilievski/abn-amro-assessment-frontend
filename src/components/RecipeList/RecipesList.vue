@@ -19,13 +19,13 @@
       />
     </div>
     <div class="results text-center">
-      {{ recipes.length }}
+      {{ this.queryOptions.totalElements }}
       results
     </div>
     <div class="container paging d-flex align-items-center">
       <span
         class="prev"
-        :class="{ disabled: this.page === 1 }"
+        :class="{ disabled: this.queryOptions.page === 0 }"
         @click.prevent="prevPage"
       >
         <i class="fas fa-chevron-left"></i>
@@ -54,21 +54,17 @@ export default {
     RecipeListItem,
     vSearch
   },
-  data: () => {
-    return {
-      page: 1
-    };
-  },
   props: {
     recipes: Array,
-    loading: Boolean
+    loading: Boolean,
+    queryOptions: Object,
   },
   methods: {
     prevPage() {
-      if (this.$data.page > 1) this.$data.page -= 1;
+      if (this.queryOptions.page > 0) this.queryOptions.page -= 1;
     },
     nextPage() {
-      if (!this.isLastPage) this.$data.page += 1;
+      if (!this.isLastPage) this.queryOptions.page += 1;
     },
     add() {
       this.$eventBus.$emit(RecipeActions.AddRecipe);
@@ -77,7 +73,7 @@ export default {
   computed: {
     isLastPage() {
       // calculate by number of results
-      return this.$data.page === 10;
+      return this.queryOptions.page === this.queryOptions.totalPages - 1 || this.queryOptions.totalPages === 0;
     }
   }
 };
