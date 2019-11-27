@@ -1,4 +1,5 @@
 1. ===================
+System returns correct number of items when filtered
 
 GIVEN User has 100 recipes stored in the system
 	And 30 recipe names include "sauce"
@@ -11,6 +12,7 @@ THEN System loads 10 recipes from API
 	And Total results label changes to 30
 
 2. ===================
+System correctly updates a recipe
 
 GIVEN System shows at least one recipe in the list
 
@@ -27,6 +29,7 @@ THEN Edit modal disappears
 	
 
 3. ===================
+System doesn't allow saving recipe with empty required fields
 
 GIVEN The system is in list recipes mode
 
@@ -41,6 +44,7 @@ THEN Add Recipe modal doesn't close
 	And error message appears under each empty required field
 
 4. ===================
+System correctly deletes recipe and redirects
 
 GIVEN The system is in recipe details mode
 
@@ -54,6 +58,7 @@ THEN Recipe details close
 
 
 5. ===================
+System correctly sets page when searching
 
 GIVEN User has more than 10 recipes in the system
 	And recipe list is not filtered
@@ -65,6 +70,7 @@ THEN System filters the results
 	And sets the page to the first
 
 6. ===================
+Recipe details appear correct on mobile
 
 GIVEN The application is viewed from mobile or tablet
 	And recipe details are not open
@@ -77,6 +83,7 @@ THEN Recipe view should take up 100% of the screen
 	And delete and edit buttons should appear on the header
 
 7. ===================
+System correctly creates an recipe and attaches an image
 
 GIVEN The system is in list recipes mode
 	Or recipe details mode
@@ -93,6 +100,7 @@ THEN Add Recipe modal closes
 	And recipe field hasImage is true
 
 8. ===================
+System updates hasValue of an edited recipe when uploading photo
 
 GIVEN The system is in list recipes mode
 	Or recipe details mode
@@ -107,6 +115,7 @@ THEN Recipe's hasImage gets updated
 	And image appears on recipe details
 
 9. ===================
+System doesn't allow invalid routes
 
 GIVEN The system is online
 
@@ -116,7 +125,14 @@ WHEN User tries to access a route that doesn't exist
 THEN User gets redirected to recipe list mode (home)
 
 10. ===================
+Editing recipe doesn't break searching and updates correctly
 
-GIVEN
-WHEN
-THEN
+GIVEN User has filtered recipes with search string 'sauce'
+
+WHEN User clicks on a recipe from the list
+	And clicks on edit recipe button on recipe details
+	And saves edited recipe
+
+THEN The system should not break filtering
+	And system should update the list item
+	And system should update recipe details

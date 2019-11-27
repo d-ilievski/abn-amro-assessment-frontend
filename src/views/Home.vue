@@ -229,6 +229,9 @@ export default {
     if (this.$route.params.id && !this.viewRecipe.id) {
       this.getRecipeById(this.$route.params.id).then(recipe => {
         this.viewRecipe = recipe;
+      })
+      .catch(() => {
+        this.router.push({name: 'home'});
       });
     }
 
