@@ -20,9 +20,7 @@
         </div>
       </div>
       <div class="image">
-        <img
-          :src="`https://via.placeholder.com/600x300?text=${recipe.name}+Photo`"
-        />
+        <img v-if="recipe.hasImage" :src="recipePhotoUrl()" alt="Recipe Photo" />
       </div>
       <div class="name">
         <h2>{{ recipe.name }}</h2>
@@ -65,7 +63,7 @@
 </template>
 
 <script>
-import { RecipeActions } from "@/utils/constants"
+import { RecipeActions } from "@/utils/constants";
 
 export default {
   name: "RecipeDetails",
@@ -78,6 +76,13 @@ export default {
     },
     remove() {
       this.$eventBus.$emit(RecipeActions.DeleteRecipe, this.$props.recipe);
+    },
+    recipePhotoUrl() {
+      let date = new Date();
+      if(this.recipe.hasImage) {
+        return `http://localhost:8081/files/${this.recipe.id}.jpg?ts=${date.getTime()}`
+      }
+      return "";
     }
   }
 };
@@ -135,7 +140,7 @@ export default {
   justify-content: center;
 }
 .image img {
-  min-width: 100%;
+  width: 100%;
   height: auto;
 }
 
@@ -160,8 +165,12 @@ export default {
   color: rgb(172, 172, 172);
 }
 
+.ingredients {
+  margin-top: 20px;
+}
+
 .instructions {
-  min-width: 100%;
+  overflow: hidden;
 }
 
 .instructions .title {

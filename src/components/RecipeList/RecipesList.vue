@@ -22,7 +22,7 @@
       {{ this.queryOptions.totalElements }}
       results
     </div>
-    <div class="container paging d-flex align-items-center">
+    <div class="paging d-flex align-items-center">
       <span
         class="prev"
         :class="{ disabled: this.queryOptions.page === 0 }"
@@ -61,10 +61,17 @@ export default {
   },
   methods: {
     prevPage() {
-      if (this.queryOptions.page > 0) this.queryOptions.page -= 1;
+      if (this.queryOptions.page > 0) {
+        this.$eventBus.$emit(RecipeActions.SearchRecipes, this.queryOptions.searchTerm, this.queryOptions.page - 1)
+      }
+      
+      // this.queryOptions.page -= 1;
     },
     nextPage() {
-      if (!this.isLastPage) this.queryOptions.page += 1;
+      if (!this.isLastPage) {
+        this.$eventBus.$emit(RecipeActions.SearchRecipes, this.queryOptions.searchTerm, this.queryOptions.page + 1)
+      } 
+      // this.queryOptions.page += 1;
     },
     add() {
       this.$eventBus.$emit(RecipeActions.AddRecipe);
@@ -138,9 +145,21 @@ export default {
 
 @media screen and (max-width: 991px) {
   .paging {
+    color: #fff;
+    background: black;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    padding: 15px;
+    margin: 0;
     justify-content: space-between;
-    margin: auto;
-    padding: 40px 20px;
+    width: 100%;
+  }
+  .paging .prev {
+    margin: 0;
+  }
+  .results {
+    margin-bottom: 50px;
   }
 }
 </style>

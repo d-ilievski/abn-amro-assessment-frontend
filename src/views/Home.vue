@@ -83,12 +83,12 @@ export default {
   methods: {
     resetWorkRecipe() {
       this.workRecipe = {
-        id: 0,
+        id: null,
         vegetarian: false,
         ingredients: [],
         name: "",
         instructions: "",
-        servings: 0
+        servings: null
       };
       this.editingRecipe = false;
       this.photoFile = null;
@@ -109,26 +109,64 @@ export default {
       this.resetWorkRecipe();
     },
     submitRecipe() {
+      // deep copy
       let recipe = JSON.parse(JSON.stringify(this.workRecipe));
-
+      // prepare for saving
       recipe.ingredients = JSON.stringify(this.workRecipe.ingredients);
 
       this.$data.showAddEditRecipeModal = false;
 
       if (this.editingRecipe) {
         recipe.updatedOn = Date.now();
-        RecipesRepository.update(recipe).then(result => {
-          // update display on frontend if editing the same recipe
+        this.updateRecipe(recipe);
+      } else {
+        this.workRecipe.createdOn = Date.now();
+        this.createRecipe(recipe);
+      }
+    },
+    createRecipe(recipe) {
+      if (recipe) {
+        RecipesRepository.create(recipe).then(result => {
+          let reducedRecipe = {
+            id: result.data.id,
+            name: result.data.name,
+            servings: result.data.servings,
+            vegetarian: result.data.vegetarian
+          };
+          this.recipes.push(reducedRecipe);
+
+          // increase No. recipes
+          this.queryOptions.totalElements++;
 
           if (this.photoFile) {
-            FilesRepository.uploadRecipePhoto(this.photoFile, recipe.id).then(() => {
-              if (result.data.id === this.viewRecipe.id) {
-                this.viewRecipe = result.data;
-                this.viewRecipe.ingredients = JSON.parse(
-                  result.data.ingredients
-                );
+            FilesRepository.uploadRecipePhoto(this.photoFile, result.data.id);
+          }
+
+          this.closeAddEditRecipeModal();
+        });
+      }
+    },
+    updateRecipe(recipe) {
+      if (recipe) {
+        RecipesRepository.update(recipe).then(result => {
+          // update display on frontend if editing the same recipe
+          let data = result.data;
+
+          if (this.photoFile) {
+            FilesRepository.uploadRecipePhoto(this.photoFile, recipe.id).then(
+              () => {
+                if (data.id === this.viewRecipe.id) {
+                  this.viewRecipe = data;
+                  this.viewRecipe.ingredients = JSON.parse(data.ingredients);
+                  this.viewRecipe.hasImage = true;
+                }
               }
-            });
+            );
+          } else {
+            if (data.id === this.viewRecipe.id) {
+              this.viewRecipe = data;
+              this.viewRecipe.ingredients = JSON.parse(data.ingredients);
+            }
           }
 
           // update list locally
@@ -138,23 +176,6 @@ export default {
           this.recipes[index].name = result.data.name;
           this.recipes[index].vegetarian = result.data.vegetarian;
           this.recipes[index].servings = result.data.servings;
-
-          this.closeAddEditRecipeModal();
-        });
-      } else {
-        this.workRecipe.createdOn = Date.now();
-        RecipesRepository.create(recipe).then(result => {
-          let reducedRecipe = {
-            id: result.data.id,
-            name: result.data.name,
-            servings: result.data.servings,
-            vegetarian: result.data.vegetarian
-          };
-          this.recipes.push(reducedRecipe);
-          
-          if (this.photoFile) {
-            FilesRepository.uploadRecipePhoto(this.photoFile);
-          }
 
           this.closeAddEditRecipeModal();
         });
@@ -184,10 +205,15 @@ export default {
     },
     deleteRecipe() {
       RecipesRepository.delete(this.viewRecipe.id).then(() => {
+        // update locally
         let index = this.recipes.findIndex(
           recipe => recipe.id === this.viewRecipe.id
         );
         this.recipes.splice(index, 1);
+
+        // No. results - 1
+        if (this.queryOptions.totalElements) this.queryOptions.totalElements--;
+
         this.deletingRecipe = false;
         this.$router.push({
           name: "home"
@@ -213,8 +239,10 @@ export default {
       });
     });
 
-    this.$eventBus.$on(RecipeActions.SearchRecipes, searchTerm => {
-      this.queryOptions.page = 0;
+    this.$eventBus.$on(RecipeActions.SearchRecipes, (searchTerm, page = 0) => {
+      this.queryOptions.searchTerm = searchTerm;
+      this.queryOptions.page = page;
+
       this.searchRecipes(searchTerm);
     });
 
