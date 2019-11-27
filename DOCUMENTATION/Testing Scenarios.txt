@@ -1,0 +1,101 @@
+1. ===================
+
+GIVEN User has 100 recipes stored in the system
+	And 30 recipe names include "sauce"
+
+WHEN User writes "sauce" in the search field
+
+THEN System loads 10 recipes from API
+	And System displays 10 recipes
+	And Recipe names include "sauce"
+	And Total results label changes to 30
+
+2. ===================
+
+GIVEN System shows at least one recipe in the list
+
+WHEN User clicks on one list item
+	And recipe details show up
+	And user clicks on the edit button on the recipe details view
+	And edit modal shows up
+	And user updates the fields of the recipe on the modal
+	And user clicks Save
+
+THEN Edit modal disappears
+	And the list item gets updated
+	And recipe details view gets updated
+	
+
+3. ===================
+
+GIVEN The system is in list recipes mode
+
+WHEN User clicks on "+ Add Recipe" button
+	And Add Recipe modal shows up
+	And User doesn't fill Recipe Name field
+	Or User doesn't fill Servings field
+	And User clicks on Save button
+
+THEN Add Recipe modal doesn't close
+	And empty reqired fields get marked with red borders
+	And error message appears under each empty required field
+
+4. ===================
+
+GIVEN The system is in recipe details mode
+
+WHEN User clicks on the delete recipe button
+	And a confirmation dialog appears
+	And User clicks on confirm button
+
+THEN Recipe details close
+	And recipe gets deleted from the list
+	And apt photo gets deleted from the system
+
+
+5. ===================
+
+GIVEN User has more than 10 recipes in the system
+	And recipe list is not filtered
+
+WHEN User goes to other page which is not the first
+	And User filters the list by search string
+	
+THEN System filters the results
+	And sets the page to the first
+
+6. ===================
+
+GIVEN The application is viewed from mobile or tablet
+	And recipe details are not open
+	And user has at least one recipe in the system
+
+WHEN User clicks on a recipe from the list
+
+THEN Recipe view should take up 100% of the screen
+	And back button should appear on the header
+	And delete and edit buttons should appear on the header
+
+7. ===================
+
+GIVEN
+WHEN
+THEN
+
+8. ===================
+
+GIVEN
+WHEN
+THEN
+
+9. ===================
+
+GIVEN
+WHEN
+THEN
+
+10. ===================
+
+GIVEN
+WHEN
+THEN
