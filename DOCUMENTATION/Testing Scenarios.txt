@@ -78,21 +78,42 @@ THEN Recipe view should take up 100% of the screen
 
 7. ===================
 
-GIVEN
-WHEN
-THEN
+GIVEN The system is in list recipes mode
+	Or recipe details mode
+
+WHEN User clicks on "+ Add Recipe" button
+	And Add Recipe modal shows up
+	And User fills required fields
+	And User attaches an image
+	And User clicks on Save button
+
+THEN Add Recipe modal closes
+	And recipe gets created
+	And image gets uploaded and linked to the recipe
+	And recipe field hasImage is true
 
 8. ===================
 
-GIVEN
-WHEN
-THEN
+GIVEN The system is in list recipes mode
+	Or recipe details mode
+	And User has a recipe with no image attached.
+
+WHEN User clicks on the newly added recipe
+	And recipe details should open up
+	And User attaches an image
+	And User clicks save
+
+THEN Recipe's hasImage gets updated
+	And image appears on recipe details
 
 9. ===================
 
-GIVEN
-WHEN
-THEN
+GIVEN The system is online
+
+WHEN User tries to access a route that doesn't exist
+	Or User tries to direct access recipe details for recipe that doesn't exist
+
+THEN User gets redirected to recipe list mode (home)
 
 10. ===================
 
